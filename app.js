@@ -1,4 +1,5 @@
 const path = require('path');
+require('dotenv').config();
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -11,8 +12,17 @@ const flash = require('connect-flash');
 const errorController = require('./controllers/error');
 const User = require('./models/user');
 
-const MONGODB_URI =
-  'mongodb+srv://matissj1337_db_user:0cOmMQnGG13IIpU2@nodejs.qxyq6wn.mongodb.net/shop?appName=NodeJs';
+const MONGODB_URI = process.env.MONGODB_URI;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const PORT = process.env.PORT || 3000;
+
+if (!MONGODB_URI) {
+  throw new Error('Missing MONGODB_URI environment variable');
+}
+
+if (!SESSION_SECRET) {
+  throw new Error('Missing SESSION_SECRET environment variable');
+}
 
 const app = express();
 const store = new MongoDBStore({
@@ -32,7 +42,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
-    secret: 'my secret',
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     store: store
@@ -68,7 +78,7 @@ app.use(errorController.get404);
 mongoose
   .connect(MONGODB_URI)
   .then(result => {
-    app.listen(3000);
+    app.listen(PORT);
   })
   .catch(err => {
     console.log(err);

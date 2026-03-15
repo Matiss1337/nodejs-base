@@ -1,6 +1,17 @@
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
 
 const User = require('../models/user');
+
+const transporter = nodemailer.createTransport({
+  host: process.env.BREVO_SMTP_HOST,
+  port: Number(process.env.BREVO_SMTP_PORT || 587),
+  secure: false,
+  auth: {
+    user: process.env.BREVO_SMTP_USER,
+    pass: process.env.BREVO_SMTP_PASS
+  }
+});
 
 exports.getLogin = (req, res, next) => {
   let message = req.flash('error');
@@ -82,7 +93,20 @@ exports.postSignup = (req, res, next) => {
           return user.save();
         })
         .then(result => {
+          transporter.sendMail({
+            from: 'matissj1337@gmail.com',
+            to: email,
+            subject: 'Welcome to our app',
+            text: 'Welcome to our app. Please login to continue.',
+            html: '<p>Welcome to our app. Please login to continue.</p>'
+          }).catch(err => {
+            console.log(err);
+          });
           res.redirect('/login');
+        })
+        .catch(err => {
+          console.log(err);
+          res.redirect('/signup');
         });
     })
     .catch(err => {

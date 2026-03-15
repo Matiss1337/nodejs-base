@@ -1,6 +1,3 @@
-const MONGODB_URI =
-  'mongodb+srv://matissj1337_db_user:0cOmMQnGG13IIpU2@nodejs.qxyq6wn.mongodb.net/shop?appName=NodeJs';
-  
 ## Support Ticket System
 
 ### What I Am Building

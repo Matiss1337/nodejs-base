@@ -117,10 +117,30 @@ It includes tools and concepts used along the way, even if the current project n
 - `connect-flash`
   One-time success/error messages across redirects.
 
+- `Nodemailer`
+  Sends transactional emails from the app.
+
+- `Brevo SMTP relay`
+  SMTP delivery service used by Nodemailer for outgoing emails.
+
 ## File / Static Asset Handling
 
 - `express.static(...)`
   Serves CSS, client JS, and images from the public folder.
+
+## Email / Messaging
+
+- `Nodemailer`
+  Builds and sends emails from Node.js.
+
+- `Brevo SMTP`
+  External SMTP provider used to deliver emails.
+
+- `SMTP`
+  Standard protocol used by the app to hand email off to Brevo.
+
+- `Welcome email on signup`
+  After a user signs up, the app sends a welcome email without blocking the redirect.
 
 ## Useful Backend Concepts Practiced
 
@@ -151,6 +171,8 @@ If I only list what the current app is actively using right now:
 - `bcryptjs`
 - `csurf`
 - `connect-flash`
+- `Nodemailer`
+- `Brevo SMTP`
 - `body-parser`
 - `nodemon`
 
@@ -164,4 +186,5 @@ If I only list what the current app is actively using right now:
 - bcrypt = password hashing
 - CSRF token = form request protection
 - Flash = one-time redirect messages
+- Nodemailer + Brevo SMTP = outgoing email delivery
 - MVC = project structure
