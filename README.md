@@ -188,3 +188,51 @@ If I only list what the current app is actively using right now:
 - Flash = one-time redirect messages
 - Nodemailer + Brevo SMTP = outgoing email delivery
 - MVC = project structure
+
+## MVC Flowchart Example
+
+One concrete example from this app is the signup flow. Instead of a diagram, here is the same flow as a simple MVC walkthrough.
+
+### Signup Flow In Plain English
+
+1. The user opens the signup page.
+   Express receives the request, `routes/auth.js` matches the signup route, `controllers/auth.js` runs `getSignup`, and the controller renders `views/auth/signup.ejs`.
+
+2. The user fills in the form and clicks Signup.
+   The browser sends a `POST /signup` request from the EJS form back to the Express app.
+
+3. Express middleware runs before the main signup logic.
+   `body-parser` reads the form fields, session middleware loads session data, `connect-flash` loads flash messages, and `csurf` checks the CSRF token.
+
+4. The auth route passes control to the signup controller.
+   `routes/auth.js` sends the request to `postSignup` in `controllers/auth.js`.
+
+5. The controller handles the business logic.
+   `postSignup` reads the submitted email and password, checks whether the user already exists, and decides what should happen next.
+
+6. The controller uses `bcryptjs` before saving anything.
+   The password is hashed so the raw password is never stored in the database.
+
+7. The controller uses the model to save data.
+   `controllers/auth.js` creates a new `User` with the Mongoose model from `models/user.js`.
+
+8. The model talks to MongoDB.
+   The `User` model saves the new user document into MongoDB.
+
+9. After the user is saved, the controller triggers side effects.
+   `postSignup` sends a welcome email with `nodemailer`, and Nodemailer hands that email off to Brevo through SMTP.
+
+10. The controller finishes the request with a redirect.
+    After signup is done, the controller redirects the user to `/login`.
+
+11. The login page is rendered as the next view.
+    Express matches the login route, `getLogin` runs in `controllers/auth.js`, and `views/auth/login.ejs` is rendered.
+
+### MVC Mapping In This Example
+
+- `View`: `views/auth/signup.ejs` and `views/auth/login.ejs`
+- `Route`: `routes/auth.js`
+- `Controller`: `getSignup`, `postSignup`, `getLogin` in `controllers/auth.js`
+- `Model`: `User` in `models/user.js`
+- `Database`: `MongoDB`
+- `External service`: `Nodemailer` -> `Brevo SMTP`
