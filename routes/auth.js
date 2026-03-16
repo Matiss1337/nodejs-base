@@ -10,11 +10,25 @@ router.get('/login', authController.getLogin);
 
 router.get('/signup', authController.getSignup);
 
-router.post('/login', authController.postLogin);
-
-router.post('/signup', [check('email')
+router.post('/login', [
+  check('email')
+    .trim()
     .isEmail()
     .withMessage('Please enter a valid email address.')
+    .normalizeEmail(),
+  check('password')
+    .isLength({ min: 5 })
+    .withMessage('Please enter a password with at least 5 characters.')
+    .isAlphanumeric()
+    .withMessage('Please enter a password with only letters and numbers.')
+    .trim()
+], authController.postLogin);
+
+router.post('/signup', [check('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please enter a valid email address.')
+    .normalizeEmail()
     .custom(value => {
       return User.findOne({ email: value }).then(userDoc => {
         if (userDoc) {

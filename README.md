@@ -188,6 +188,15 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `Async validation`
   Validation can query the database asynchronously, for example to reject signup when an email already exists.
 
+- `Sanitizing`
+  Input can be cleaned before the controller runs so validation and database checks work with more consistent values.
+
+- `trim()`
+  Removes whitespace from the start and end of input values, which helps avoid accidental spaces in auth forms.
+
+- `normalizeEmail()`
+  Standardizes email input before validation or lookup, for example by lowercasing it so auth checks stay consistent.
+
 - `validationResult(req)`
   Controllers read validation results and decide whether to re-render the form with an error.
 
@@ -210,6 +219,8 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - route-level request validation
 - custom validation error messages
 - async validation against the database
+- sanitized input before validation and lookup
+- normalized email input before auth checks
 
 ## Current Practical Stack In This Project
 
