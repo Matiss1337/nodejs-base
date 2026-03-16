@@ -6,6 +6,22 @@ It already covers the main backend pieces you usually need in a real project: ro
 
 This README is meant as a practical reference point for future backend work, not just a loose list of tools.
 
+## Required Setup
+
+To run this project, you need a `MongoDB` database, a `Brevo` account for SMTP email sending, and a local `.env` file with these variables:
+
+Example `.env`:
+
+```env
+MONGODB_URI='your-mongodb-connection-string' - your MongoDB connection string
+SESSION_SECRET='your-long-random-session-secret' - your own long random session secret
+PORT=3000 - local app port
+BREVO_SMTP_HOST='smtp-relay.brevo.com' - Brevo SMTP host
+BREVO_SMTP_PORT='587' - Brevo SMTP port
+BREVO_SMTP_USER='your-brevo-smtp-login' - your Brevo SMTP login
+BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
+```
+
 ## Core Runtime
 
 - `Node.js`
@@ -27,6 +43,9 @@ This README is meant as a practical reference point for future backend work, not
 
 - `body-parser`
   Parses incoming form data so `req.body` works for POST requests.
+
+- `express-validator`
+  Request validation middleware used in routes for form and input checks.
 
 - `path`
   Node core module used for safe filesystem path building.
@@ -115,6 +134,9 @@ This README is meant as a practical reference point for future backend work, not
 - `Password reset`
   Generate reset tokens, email reset links, validate token expiry, and update stored passwords.
 
+- `Validation`
+  Validate incoming auth data before business logic runs.
+
 - `CSRF`
   Protection against forged authenticated form submissions.
 
@@ -152,6 +174,23 @@ This README is meant as a practical reference point for future backend work, not
 - `Password reset email`
   The app emails a reset link with a token and lets the user set a new password.
 
+## Validation
+
+- `Route-level validation`
+  Validation rules live in `routes/auth.js`, so request checks run before the controller.
+
+- `express-validator`
+  Used to validate fields like email, password length, password format, and password confirmation.
+
+- `Custom error messages`
+  Validation rules use `.withMessage(...)` so the UI can show specific feedback instead of generic errors.
+
+- `Async validation`
+  Validation can query the database asynchronously, for example to reject signup when an email already exists.
+
+- `validationResult(req)`
+  Controllers read validation results and decide whether to re-render the form with an error.
+
 ## Useful Backend Concepts Practiced
 
 - request / response lifecycle
@@ -168,6 +207,9 @@ This README is meant as a practical reference point for future backend work, not
 - basic security middleware
 - token-based password reset
 - email-based account recovery
+- route-level request validation
+- custom validation error messages
+- async validation against the database
 
 ## Current Practical Stack In This Project
 
@@ -183,6 +225,7 @@ If I only list what the current app is actively using right now:
 - `bcryptjs`
 - `csurf`
 - `connect-flash`
+- `express-validator`
 - `Nodemailer`
 - `Brevo SMTP`
 - `crypto`
@@ -199,6 +242,7 @@ If I only list what the current app is actively using right now:
 - bcrypt = password hashing
 - CSRF token = form request protection
 - Flash = one-time redirect messages
+- express-validator = request validation before controller logic
 - Nodemailer + Brevo SMTP = outgoing email delivery
 - crypto + reset token = password recovery flow
 - MVC = project structure
@@ -250,6 +294,32 @@ One concrete example from this app is the signup flow. Instead of a diagram, her
 - `Model`: `User` in `models/user.js`
 - `Database`: `MongoDB`
 - `External service`: `Nodemailer` -> `Brevo SMTP`
+
+### Signup Validation In Plain English
+
+1. Validation starts in `routes/auth.js`.
+   The signup route runs `express-validator` rules before `postSignup` in the controller.
+
+2. Email format is checked first.
+   `check('email').isEmail()` rejects invalid email input.
+
+3. The email rule can also run async validation.
+   A custom validator can query `User.findOne(...)` and reject when the email already exists in the database.
+
+4. Password rules run in the route.
+   Password length, allowed characters, and trimming are handled before the controller runs.
+
+5. Confirm password is compared against the original password.
+   A custom validator checks whether `confirmPassword` matches `req.body.password`.
+
+6. Custom messages improve UX.
+   `.withMessage(...)` gives readable messages like "Please enter a valid email address." instead of the default "Invalid value".
+
+7. The controller reads validation results.
+   `validationResult(req)` returns all validation errors, and the controller uses the first one with `errors.array()[0].msg`.
+
+8. If validation fails, the controller re-renders the signup page.
+   The user stays on the form and sees the validation message instead of continuing into signup logic.
 
 ## Password Reset Flow
 
