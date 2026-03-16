@@ -1,9 +1,10 @@
 # Stack So Far Used
 
-High-level reference for the Node course up to roughly section 16.
+Base Node.js backend reference project that can be reused as a template or starting point for future apps.
 
-This is not "final stack only".
-It includes tools and concepts used along the way, even if the current project no longer uses all of them at the same time.
+It already covers the main backend pieces you usually need in a real project: routing, MVC structure, authentication, sessions, security middleware, MongoDB with Mongoose, server-rendered views, transactional email, and password reset flow.
+
+This README is meant as a practical reference point for future backend work, not just a loose list of tools.
 
 ## Core Runtime
 
@@ -15,6 +16,9 @@ It includes tools and concepts used along the way, even if the current project n
 
 - `nodemon`
   Restarts the server automatically during development.
+
+- `crypto`
+  Node core module used to generate secure reset tokens.
 
 ## Server / App Framework
 
@@ -108,6 +112,9 @@ It includes tools and concepts used along the way, even if the current project n
 - `Authorization`
   Restricting routes/actions to authenticated users.
 
+- `Password reset`
+  Generate reset tokens, email reset links, validate token expiry, and update stored passwords.
+
 - `CSRF`
   Protection against forged authenticated form submissions.
 
@@ -142,6 +149,9 @@ It includes tools and concepts used along the way, even if the current project n
 - `Welcome email on signup`
   After a user signs up, the app sends a welcome email without blocking the redirect.
 
+- `Password reset email`
+  The app emails a reset link with a token and lets the user set a new password.
+
 ## Useful Backend Concepts Practiced
 
 - request / response lifecycle
@@ -156,6 +166,8 @@ It includes tools and concepts used along the way, even if the current project n
 - CRUD flows
 - async promise chains
 - basic security middleware
+- token-based password reset
+- email-based account recovery
 
 ## Current Practical Stack In This Project
 
@@ -173,6 +185,7 @@ If I only list what the current app is actively using right now:
 - `connect-flash`
 - `Nodemailer`
 - `Brevo SMTP`
+- `crypto`
 - `body-parser`
 - `nodemon`
 
@@ -187,6 +200,7 @@ If I only list what the current app is actively using right now:
 - CSRF token = form request protection
 - Flash = one-time redirect messages
 - Nodemailer + Brevo SMTP = outgoing email delivery
+- crypto + reset token = password recovery flow
 - MVC = project structure
 
 ## MVC Flowchart Example
@@ -236,3 +250,54 @@ One concrete example from this app is the signup flow. Instead of a diagram, her
 - `Model`: `User` in `models/user.js`
 - `Database`: `MongoDB`
 - `External service`: `Nodemailer` -> `Brevo SMTP`
+
+## Password Reset Flow
+
+This is the other important auth flow in the app. It starts with an email form, creates a reset token, sends the token by email, and then lets the user save a new password.
+
+### Password Reset In Plain English
+
+1. The user opens the reset page.
+   Express receives `GET /reset`, `routes/auth.js` matches the route, `controllers/auth.js` runs `getReset`, and the controller renders `views/auth/reset.ejs`.
+
+2. The user submits their email.
+   The reset form sends a `POST /reset` request back to the app.
+
+3. The controller generates a reset token.
+   `postReset` uses Node's `crypto` module to create a secure random token.
+
+4. The controller looks up the user by email.
+   If no user is found, the controller flashes an error and redirects back to `/reset`.
+
+5. The controller stores the reset token on the user.
+   The `User` model saves both `resetToken` and `resetTokenExpiration` in MongoDB.
+
+6. The app sends the reset email.
+   `nodemailer` sends an email through Brevo SMTP with a link like `http://localhost:3000/reset/<token>`.
+
+7. The user clicks the reset link from the email.
+   Express receives `GET /reset/:token`, and `getNewPassword` checks whether the token exists and whether `resetTokenExpiration` is still in the future.
+
+8. If the token is valid, the app renders the new password page.
+   `controllers/auth.js` renders `views/auth/new-password.ejs` and passes the token and user id into the form as hidden fields.
+
+9. The user submits the new password form.
+   `views/auth/new-password.ejs` sends a `POST /new-password` request with the new password, token, and user id.
+
+10. The controller validates the reset request again.
+    `postNewPassword` looks up the user by `_id`, `resetToken`, and `resetTokenExpiration` so expired or invalid tokens are rejected.
+
+11. The controller hashes and saves the new password.
+    `bcryptjs` hashes the new password, the `User` model saves it, and the reset token fields are cleared.
+
+12. The flow ends by redirecting back to login.
+    After the password is updated, the controller redirects the user to `/login`.
+
+### MVC Mapping In This Reset Example
+
+- `View`: `views/auth/reset.ejs` and `views/auth/new-password.ejs`
+- `Route`: `routes/auth.js`
+- `Controller`: `getReset`, `postReset`, `getNewPassword`, `postNewPassword` in `controllers/auth.js`
+- `Model`: `User` in `models/user.js`
+- `Database`: `MongoDB`
+- `External services`: `crypto`, `Nodemailer`, `Brevo SMTP`
