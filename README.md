@@ -64,6 +64,12 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `Error handling`
   Handling 404s and general request failures.
 
+- `500 page handling`
+  The app includes a dedicated `GET /500` route, `controllers/error.js` `get500`, `views/500.ejs`, and terminal Express error middleware that renders the `500` page for forwarded server errors.
+
+- `Express error passing`
+  In normal synchronous Express code, you can throw directly with something like `throw new Error('Dummy error')`. In asynchronous code such as promise chains and callbacks, you should pass the error with `next(new Error(err))` or `next(err)` instead. Once Express reaches the error-handling middleware in `app.js`, the request skips the normal flow and renders the `500` page.
+
 ## Templating / Rendering
 
 - `EJS`
@@ -77,6 +83,9 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 
 - `Server-rendered views`
   Backend renders HTML and passes data into templates with `res.render(...)`.
+
+- `Error views`
+  Dedicated templates exist for both `404` and `500` responses.
 
 - `Partials / includes`
   Shared template pieces like navigation and reusable form blocks.
@@ -200,6 +209,35 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `validationResult(req)`
   Controllers read validation results and decide whether to re-render the form with an error.
 
+## HTTP Status Code Groups
+
+- `200 OK`
+  Operation succeeded.
+
+- `201 Created`
+  Success response used when a new resource was created.
+
+- `301 Moved Permanently`
+  The resource has been permanently moved to a new URL.
+
+- `401 Unauthorized`
+  The request is not authenticated, so the user must log in first.
+
+- `403 Forbidden`
+  The user is authenticated, but is not allowed to perform that action.
+
+- `404 Not Found`
+  The requested route, page, or resource was not found.
+
+- `422 Unprocessable Entity`
+  The request was valid in structure, but the input data failed validation or could not be processed.
+
+- `429 Too Many Requests`
+  The client sent too many requests in a short time, so the server is rate limiting access.
+
+- `500 Internal Server Error`
+  Something failed on the server, so the backend could not complete the request safely.
+
 ## Useful Backend Concepts Practiced
 
 - request / response lifecycle
@@ -221,6 +259,9 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - async validation against the database
 - sanitized input before validation and lookup
 - normalized email input before auth checks
+- dedicated `404` and `500` error pages
+- passing server errors with `next(error)`
+- terminal Express error middleware
 
 ## Current Practical Stack In This Project
 
