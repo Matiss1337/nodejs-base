@@ -166,6 +166,9 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `express.static(...)`
   Serves CSS, client JS, and images from the public folder.
 
+- `multer`
+  Middleware for handling `multipart/form-data` uploads, used for image file uploads from forms.
+
 ## Email / Messaging
 
 - `Nodemailer`
@@ -282,6 +285,7 @@ If I only list what the current app is actively using right now:
 - `Brevo SMTP`
 - `crypto`
 - `body-parser`
+- `multer`
 - `nodemon`
 
 ## Quick Mental Map
