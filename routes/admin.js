@@ -12,10 +12,6 @@ const productValidation = [
     .trim()
     .isLength({ min: 3 })
     .withMessage('Please enter a title with at least 3 characters.'),
-  check('imageUrl')
-    .trim()
-    .isURL()
-    .withMessage('Please enter a valid image URL.'),
   check('price')
     .isFloat({ gt: 0 })
     .withMessage('Please enter a valid price greater than 0.'),

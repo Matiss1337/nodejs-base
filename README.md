@@ -169,6 +169,18 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `multer`
   Middleware for handling `multipart/form-data` uploads, used for image file uploads from forms.
 
+- `enctype="multipart/form-data"`
+  Form setting required when sending files like images, so the browser submits the request as multipart data instead of normal urlencoded form data.
+
+- `Image file storage`
+  Product image uploads are saved by Multer into the local `images/` folder on the server.
+
+- `Image path saved in MongoDB`
+  After upload, the controller stores the Multer file path such as `images/my-file.jpg` in the product document as `imageUrl`, instead of storing the raw file itself in MongoDB.
+
+- `Static image serving`
+  Express exposes the `images/` folder with `express.static(...)`, so saved image paths can be requested by the browser and rendered in EJS templates.
+
 ## Email / Messaging
 
 - `Nodemailer`

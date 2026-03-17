@@ -15,8 +15,8 @@ const productSchema = new Schema({
     type: String,
     required: true
   },
-  image: {
-    type: Buffer,
+  imageUrl: {
+    type: String,
     required: true
   },
   userId: {

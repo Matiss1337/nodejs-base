@@ -10,7 +10,6 @@ exports.getAddProduct = (req, res, next) => {
     validationErrors: [],
     oldInput: {
       title: '',
-      imageUrl: '',
       price: '',
       description: ''
     }
@@ -19,10 +18,26 @@ exports.getAddProduct = (req, res, next) => {
 
 exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
-  const image = req.body.image;
+  const image = req.file
   const price = req.body.price;
   const description = req.body.description;
   const errors = validationResult(req);
+
+  if (!image) {
+    return res.status(422).render('admin/edit-product', {
+      pageTitle: 'Add Product',
+      path: '/admin/add-product',
+      editing: false,
+      errorMessage: 'Please provide a valid image file.',
+      validationErrors: errors.array(),
+      oldInput: {
+        title: title,
+        price: price,
+        description: description
+      }
+    });
+  }
+
   if (!errors.isEmpty()) {
     return res.status(422).render('admin/edit-product', {
       pageTitle: 'Add Product',
@@ -32,12 +47,14 @@ exports.postAddProduct = (req, res, next) => {
       validationErrors: errors.array(),
       oldInput: {
         title: title,
-        image: image,
         price: price,
         description: description
       }
     });
   }
+
+  const imageUrl = image.path;
+
   const product = new Product({
     title: title,
     price: price,
@@ -87,8 +104,8 @@ exports.getEditProduct = (req, res, next) => {
 exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
+  const image = req.file;
   const updatedPrice = req.body.price;
-  const updatedImageUrl = req.body.imageUrl;
   const updatedDesc = req.body.description;
   const errors = validationResult(req);
 
@@ -102,7 +119,7 @@ exports.postEditProduct = (req, res, next) => {
       product: {
         _id: prodId,
         title: updatedTitle,
-        imageUrl: updatedImageUrl,
+        imageUrl: image ? image.path : '',
         price: updatedPrice,
         description: updatedDesc
       }
@@ -117,7 +134,9 @@ exports.postEditProduct = (req, res, next) => {
       product.title = updatedTitle;
       product.price = updatedPrice;
       product.description = updatedDesc;
-      product.imageUrl = updatedImageUrl;
+      if (image) {
+        product.imageUrl = image.path;
+      }
       return product.save();
     })
     .then(result => {
