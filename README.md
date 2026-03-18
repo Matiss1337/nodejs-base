@@ -10,7 +10,7 @@ This README is meant as a practical reference point for future backend work, not
 
 To run this project, you need a `MongoDB` database, a `Brevo` account for SMTP email sending, and a local `.env` file with these variables:
 
-Example `.env`:
+Example `.env`: 
 
 ```env
 MONGODB_URI='your-mongodb-connection-string' - your MongoDB connection string
