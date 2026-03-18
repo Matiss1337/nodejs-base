@@ -181,6 +181,39 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - `Static image serving`
   Express exposes the `images/` folder with `express.static(...)`, so saved image paths can be requested by the browser and rendered in EJS templates.
 
+- `Upload directory requirement`
+  The local `images/` folder must exist before Multer tries to write uploaded files into it. If the directory is missing, file upload fails with an `ENOENT` error before the product can be created.
+
+- `Uploaded file cleanup`
+  The app should remove old image files from disk when a product image is replaced or when the product is deleted. In this project that cleanup is handled through `util/file.js` and called from `controllers/admin.js`.
+
+- `Delete file with fs.unlink`
+  `util/file.js` wraps `fs.unlink(...)` so controllers can delete stored files without duplicating filesystem logic in multiple places.
+
+- `Keep database and filesystem in sync`
+  When a product is deleted from MongoDB, its uploaded image should also be deleted from the server. Otherwise the app leaves orphaned files behind in `images/`.
+
+- `Image replacement flow`
+  When editing a product and uploading a new image, the app first deletes the old image file and then stores the new path on the product document.
+
+- `Stream direction matters`
+  A writable file stream cannot be piped into `res`. For generated files such as PDFs, the readable source stream must pipe into both the file stream and the HTTP response.
+
+- `Readable vs writable streams`
+  In the invoice flow, `PDFDocument` is the readable stream source, while `fs.createWriteStream(...)` and `res` are writable destinations.
+
+- `Inline PDF response`
+  Setting `Content-Type: application/pdf` and `Content-Disposition: inline; filename="..."` tells the browser to open the PDF in the browser instead of forcing a download.
+
+- `Generate and send PDF in one pass`
+  The invoice flow creates a `PDFDocument`, pipes it to a file on disk, pipes it to `res`, writes order/product data into the document, and ends the stream with `pdfDoc.end()`.
+
+- `Invoice data source`
+  The invoice PDF should use data from the stored `Order` document, not from current product lookups. That matters because orders are historical snapshots and should not change if the product changes later.
+
+- `Ownership check before file access`
+  Before generating or serving an invoice, the app should verify that the requested order exists and that `order.user.userId` matches the current logged-in user. Otherwise any authenticated user could request another user's invoice by URL.
+
 ## Email / Messaging
 
 - `Nodemailer`
