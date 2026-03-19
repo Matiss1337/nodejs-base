@@ -180,50 +180,38 @@ exports.getCheckout = (req, res, next) => {
 };
 
 exports.getCheckoutSuccess = (req, res, next) => {
-    let products = [];
-    let totalPrice = 0;
+    console.log("Checkout success route hit");
 
     req.user
         .populate("cart.items.productId")
         .execPopulate()
         .then((user) => {
-            products = user.cart.items;
-
-            products.forEach((p) => {
-                totalPrice += p.productId.price * p.quantity;
+            const products = user.cart.items.map((i) => {
+                return {
+                    quantity: i.quantity,
+                    product: { ...i.productId._doc },
+                };
             });
 
-            return stripe.checkout.sessions.create({
-                payment_method_types: ["card"],
-                line_items: products.map((p) => {
-                    return {
-                        price_data: {
-                            currency: "euro",
-                            product_data: {
-                                name: p.productId.title,
-                            },
-                            unit_amount: Math.round(p.productId.price * 100),
-                        },
-                        quantity: p.quantity,
-                    };
-                }),
-                success_url:
-                    req.protocol +
-                    "://" +
-                    req.get("host") +
-                    "/checkout/success",
-                cancel_url:
-                    req.protocol + "://" + req.get("host") + "/checkout/cancel",
-            });
-        })
-        .then((session) => {
-            res.render("shop/checkout", {
-                path: "/checkout",
-                pageTitle: "Checkout",
+            console.log("Checkout success products prepared:", products.length);
+
+            const order = new Order({
+                user: {
+                    email: req.user.email,
+                    userId: req.user,
+                },
                 products: products,
-                totalPrice: totalPrice,
-                sessionId: session.id,
             });
+
+            return order.save();
+        })
+        .then(() => {
+            console.log("Checkout success order saved");
+            return req.user.clearCart();
+        })
+        .then(() => {
+            console.log("Checkout success cart cleared");
+            res.redirect("/orders");
         })
         .catch((err) => {
             err.httpStatusCode = 500;

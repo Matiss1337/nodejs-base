@@ -10,7 +10,7 @@ This README is meant as a practical reference point for future backend work, not
 
 To run this project, you need a `MongoDB` database, a `Brevo` account for SMTP email sending, and a local `.env` file with these variables:
 
-Example `.env`: 
+Example `.env`:
 
 ```env
 MONGODB_URI='your-mongodb-connection-string' - your MongoDB connection string
@@ -313,6 +313,9 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - client-side API calls from browser JavaScript
 - async delete requests with `fetch()`
 - returning JSON from Express controllers
+- Stripe Checkout session creation
+- hosted payment page redirects
+- clearing the cart after payment success
 - dedicated `404` and `500` error pages
 - passing server errors with `next(error)`
 - terminal Express error middleware
@@ -340,16 +343,16 @@ The shop homepage now uses query-based pagination in `controllers/shop.js` and r
 
 6. The controller passes both product data and pagination metadata into EJS.
    `res.render('shop/index', ...)` sends:
-   - `prods`
-   - `totalProducts`
-   - `itemsPerPage`
-   - `allowedItemsPerPage`
-   - `currentPage`
-   - `totalPages`
-   - `hasNextPage`
-   - `hasPreviousPage`
-   - `nextPage`
-   - `previousPage`
+    - `prods`
+    - `totalProducts`
+    - `itemsPerPage`
+    - `allowedItemsPerPage`
+    - `currentPage`
+    - `totalPages`
+    - `hasNextPage`
+    - `hasPreviousPage`
+    - `nextPage`
+    - `previousPage`
 
 7. The EJS view renders the current pagination state.
    `views/shop/index.ejs` shows the total product count, current page number, next/previous links, and the selected `itemsPerPage` option.
@@ -409,6 +412,52 @@ The admin product list now also includes a client-side API call flow for deletin
 - `Response type`: JSON via `res.json(...)`
 - `UI behavior`: remove product card without full page reload
 
+## Stripe Checkout Flow
+
+The shop checkout now uses Stripe Checkout for hosted card payments instead of submitting the order directly from the checkout page.
+
+### Stripe Checkout In Plain English
+
+1. The user opens `/checkout`.
+   `controllers/shop.js` loads the current cart, calculates the order total, and prepares Stripe line items from the cart products.
+
+2. The backend creates a Stripe Checkout Session.
+   `stripe.checkout.sessions.create(...)` is used with:
+    - `payment_method_types: ['card']`
+    - `line_items`
+    - `mode: 'payment'`
+    - `success_url`
+    - `cancel_url`
+
+3. The checkout page renders the hosted payment link.
+   `views/shop/checkout.ejs` receives `sessionUrl` from the controller and uses it for the Pay button.
+
+4. The customer is redirected to Stripe's hosted checkout page.
+   The payment form itself is handled by Stripe instead of being built directly inside the app.
+
+5. After payment, Stripe redirects back into the app.
+   Successful payments return to `/checkout/success`, while cancelled payments return to `/checkout/cancel`.
+
+6. The success route creates the order in the app database.
+   `getCheckoutSuccess` reads the cart, stores an `Order` document, and keeps a snapshot of the purchased product data.
+
+7. The success route clears the cart.
+   After the order is saved, `req.user.clearCart()` removes the purchased items from the user's cart.
+
+8. The app redirects the user to their orders page.
+   Once payment success handling is finished, the user is sent to `/orders`.
+
+### Stripe Checkout Mapping In This Example
+
+- `Checkout route`: `/checkout`
+- `Success route`: `/checkout/success`
+- `Cancel route`: `/checkout/cancel`
+- `Backend library`: `stripe`
+- `Server integration`: `controllers/shop.js`
+- `View`: `views/shop/checkout.ejs`
+- `Stripe object used`: Checkout Session
+- `Frontend behavior`: link to Stripe-hosted payment page
+
 ## Current Practical Stack In This Project
 
 If I only list what the current app is actively using right now:
@@ -429,6 +478,7 @@ If I only list what the current app is actively using right now:
 - `crypto`
 - `body-parser`
 - `multer`
+- `Stripe`
 - `nodemon`
 
 ## Quick Mental Map
@@ -444,6 +494,7 @@ If I only list what the current app is actively using right now:
 - express-validator = request validation before controller logic
 - Nodemailer + Brevo SMTP = outgoing email delivery
 - crypto + reset token = password recovery flow
+- Stripe Checkout = hosted payment flow
 - MVC = project structure
 
 ## MVC Flowchart Example
