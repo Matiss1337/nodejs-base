@@ -1,0 +1,43 @@
+<%- include('../includes/head.ejs') %>
+    </head>
+
+    <body>
+        <%- include('../includes/navigation.ejs') %>
+            <main class="layout-stack">
+                <div class="layout-stack">
+                    <ul class="cart-list">
+                        <% products.forEach(p=> { %>
+                            <% const unitPrice=Number(p.productId.price); %>
+                                <% const lineTotal=unitPrice * p.quantity; %>
+                                    <li class="cart-item">
+                                        <div class="cart-item__meta">
+                                            <h1 class="product-card__title">
+                                                <%= p.productId.title %>
+                                            </h1>
+                                            <p class="section-copy">Quantity: <%= p.quantity %>
+                                            </p>
+                                            <p class="section-copy">Unit price: $<%= unitPrice.toFixed(2) %>
+                                            </p>
+                                            <p class="product-card__price">Line total: $<%= lineTotal.toFixed(2) %>
+                                            </p>
+                                        </div>
+                                    </li>
+                                    <% }) %>
+                    </ul>
+                    <div class="surface p-4">
+                        <div class="layout-stack">
+                            <h2 class="product-card__title">Order summary</h2>
+                            <p class="section-copy">Items: <%= products.length %>
+                            </p>
+                            <p class="product-card__price">Total: $<%= Number(totalPrice).toFixed(2) %>
+                            </p>
+                        </div>
+                        <div class="mt-4">
+                            <a href="<%= sessionUrl %>" class="btn">Pay</a>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+            <%- include('../includes/end.ejs') %>
+                

@@ -1,0 +1,37 @@
+<%- include('../includes/head.ejs') %>
+</head>
+
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main class="layout-stack">
+        <% if (products.length > 0) { %>
+            <div class="layout-stack">
+                <ul class="cart-list">
+                    <% products.forEach(p => { %>
+                        <li class="cart-item">
+                            <div class="cart-item__meta">
+                                <h1 class="product-card__title"><%= p.productId.title %></h1>
+                                <p class="section-copy">Quantity: <%= p.quantity %></p>
+                            </div>
+                            <form action="/cart-delete-item" method="POST">
+                                <input type="hidden" value="<%= p.productId._id %>" name="productId">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button class="btn danger" type="submit">Delete</button>
+                            </form>
+                        </li>
+                    <% }) %>
+                </ul>
+                <div class="surface p-4">
+                    <form action="/create-order" method="POST">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="btn-solid">Order Now</button>
+                    </form>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="empty-state">
+                <p>No products in cart.</p>
+            </div>
+        <% } %>
+    </main>
+<%- include('../includes/end.ejs') %>

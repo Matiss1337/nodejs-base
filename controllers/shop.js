@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const Product = require("../models/product");
 const Order = require("../models/order");
@@ -123,6 +124,118 @@ exports.postCartDeleteProduct = (req, res, next) => {
             err.httpStatusCode = 500;
             return next(err);
         });
+};
+
+exports.getCheckout = (req, res, next) => {
+    let products = [];
+    let totalPrice = 0;
+
+    req.user
+        .populate("cart.items.productId")
+        .execPopulate()
+        .then((user) => {
+            products = user.cart.items;
+
+            products.forEach((p) => {
+                totalPrice += p.productId.price * p.quantity;
+            });
+
+            return stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                line_items: products.map((p) => {
+                    return {
+                        price_data: {
+                            currency: "eur",
+                            product_data: {
+                                name: p.productId.title,
+                            },
+                            unit_amount: Math.round(p.productId.price * 100),
+                        },
+                        quantity: p.quantity,
+                    };
+                }),
+                mode: "payment",
+                success_url:
+                    req.protocol +
+                    "://" +
+                    req.get("host") +
+                    "/checkout/success",
+                cancel_url:
+                    req.protocol + "://" + req.get("host") + "/checkout/cancel",
+            });
+        })
+        .then((session) => {
+            res.render("shop/checkout", {
+                path: "/checkout",
+                pageTitle: "Checkout",
+                products: products,
+                totalPrice: totalPrice,
+                sessionUrl: session.url,
+            });
+        })
+        .catch((err) => {
+            err.httpStatusCode = 500;
+            return next(err);
+        });
+};
+
+exports.getCheckoutSuccess = (req, res, next) => {
+    let products = [];
+    let totalPrice = 0;
+
+    req.user
+        .populate("cart.items.productId")
+        .execPopulate()
+        .then((user) => {
+            products = user.cart.items;
+
+            products.forEach((p) => {
+                totalPrice += p.productId.price * p.quantity;
+            });
+
+            return stripe.checkout.sessions.create({
+                payment_method_types: ["card"],
+                line_items: products.map((p) => {
+                    return {
+                        price_data: {
+                            currency: "euro",
+                            product_data: {
+                                name: p.productId.title,
+                            },
+                            unit_amount: Math.round(p.productId.price * 100),
+                        },
+                        quantity: p.quantity,
+                    };
+                }),
+                success_url:
+                    req.protocol +
+                    "://" +
+                    req.get("host") +
+                    "/checkout/success",
+                cancel_url:
+                    req.protocol + "://" + req.get("host") + "/checkout/cancel",
+            });
+        })
+        .then((session) => {
+            res.render("shop/checkout", {
+                path: "/checkout",
+                pageTitle: "Checkout",
+                products: products,
+                totalPrice: totalPrice,
+                sessionId: session.id,
+            });
+        })
+        .catch((err) => {
+            err.httpStatusCode = 500;
+            return next(err);
+        });
+};
+
+exports.getCheckoutCancel = (req, res, next) => {
+    res.render("shop/checkout-cancel", {
+        path: "/checkout/cancel",
+        pageTitle: "Checkout Cancel",
+    });
 };
 
 exports.postOrder = (req, res, next) => {
