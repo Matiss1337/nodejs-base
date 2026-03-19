@@ -1,18 +1,27 @@
 <%- include('../includes/head.ejs') %>
-    </head>
+</head>
 
-    <body>
-        <%- include('../includes/navigation.ejs') %>
-        <main class="centered">
-            <h1><%= product.title %></h1>
-            <hr>
-            <div class="image">
-                <img src="<%= product.imageUrl %>" alt="<%= product.title %>">
+<body>
+    <%- include('../includes/navigation.ejs') %>
+    <main>
+        <section class="detail-shell">
+            <div class="detail-image">
+                <img src="/<%= product.imageUrl %>" alt="<%= product.title %>">
             </div>
-            <h2><%= product.price %></h2>
-            <p><%= product.description %></p>
+            <div class="detail-panel">
+                <div class="layout-stack">
+                    <h1 class="page-title"><%= product.title %></h1>
+                    <p class="product-card__price">$<%= product.price %></p>
+                    <div class="detail-copy">
+                        <p><%= product.description %></p>
+                    </div>
+                </div>
             <% if (isAuthenticated) { %>
-                <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                    <div class="mt-6">
+                        <%- include('../includes/add-to-cart.ejs', {product: product}) %>
+                    </div>
             <% } %>
-        </main>
-        <%- include('../includes/end.ejs') %>
+            </div>
+        </section>
+    </main>
+<%- include('../includes/end.ejs') %>

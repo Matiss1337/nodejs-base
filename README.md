@@ -307,9 +307,63 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - async validation against the database
 - sanitized input before validation and lookup
 - normalized email input before auth checks
+- query-driven pagination
+- passing pagination state into EJS
+- validating allowed page-size values
 - dedicated `404` and `500` error pages
 - passing server errors with `next(error)`
 - terminal Express error middleware
+
+## Product Pagination Flow
+
+The shop homepage now uses query-based pagination in `controllers/shop.js` and renders the pagination state into `views/shop/index.ejs`.
+
+### Pagination In Plain English
+
+1. The browser requests the shop page with query params.
+   Example: `/` uses defaults, while `/?page=2&itemsPerPage=4` requests page 2 with 4 products per page.
+
+2. The controller reads the pagination input from `req.query`.
+   `getIndex` parses `page` and `itemsPerPage` from the URL.
+
+3. The controller validates the requested page size.
+   `itemsPerPage` is only accepted if it exists in `allowedItemsPerPage`. If not, the controller falls back to `defaultItemsPerPage`. That prevents unsupported values from being used directly in the database query.
+
+4. The controller counts total products first.
+   `countDocuments()` is used so the app knows how many products exist overall before calculating page metadata.
+
+5. The controller fetches only the current page slice.
+   `skip((page - 1) * itemsPerPage)` skips earlier results and `.limit(itemsPerPage)` restricts the number of products returned for the current page.
+
+6. The controller passes both product data and pagination metadata into EJS.
+   `res.render('shop/index', ...)` sends:
+   - `prods`
+   - `totalProducts`
+   - `itemsPerPage`
+   - `allowedItemsPerPage`
+   - `currentPage`
+   - `totalPages`
+   - `hasNextPage`
+   - `hasPreviousPage`
+   - `nextPage`
+   - `previousPage`
+
+7. The EJS view renders the current pagination state.
+   `views/shop/index.ejs` shows the total product count, current page number, next/previous links, and the selected `itemsPerPage` option.
+
+8. The items-per-page control triggers pagination through a normal GET request.
+   The `<select>` lives inside a GET form with a hidden `page=1` field. When the user changes the select, `onchange="this.form.submit()"` submits the form and reloads the page with the new `itemsPerPage` value.
+
+9. Changing page size resets pagination back to page 1.
+   That is important because a previous page number may no longer be valid after the page size changes.
+
+### Pagination Mapping In This Example
+
+- `Controller`: `getIndex` in `controllers/shop.js`
+- `View`: `views/shop/index.ejs`
+- `Query params`: `page`, `itemsPerPage`
+- `Database behavior`: `countDocuments()`, `skip()`, `limit()`
+- `UI trigger`: GET form submission from the items-per-page `<select>`
 
 ## Current Practical Stack In This Project
 

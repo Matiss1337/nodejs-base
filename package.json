@@ -6,12 +6,16 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js",
-    "start-server": "node app.js"
+    "start-server": "node app.js",
+    "build:css": "tailwindcss -i ./public/css/tailwind.css -o ./public/css/output.css --minify",
+    "watch:css": "tailwindcss -i ./public/css/tailwind.css -o ./public/css/output.css --watch"
   },
   "author": "Maximilian Schwarzmüller",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^1.18.3"
+    "@tailwindcss/cli": "^4.2.2",
+    "nodemon": "^1.18.3",
+    "tailwindcss": "^4.2.2"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

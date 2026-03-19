@@ -1,0 +1,315 @@
+@import "tailwindcss";
+
+@source "../../views/**/*.ejs";
+
+@theme {
+  --color-brand-700: #00695c;
+  --color-brand-800: #005247;
+  --color-brand-50: #eef7f5;
+  --color-accent-400: #ffeb3b;
+}
+
+@layer base {
+  body {
+    font-family: "Open Sans", sans-serif;
+    @apply m-0 bg-stone-50 text-sm text-stone-900 antialiased;
+  }
+
+  main {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p {
+    @apply m-0;
+  }
+
+  a {
+    @apply text-brand-700;
+  }
+
+  a:hover {
+    @apply text-brand-800;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 outline-none transition;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply border-brand-700 ring-2 ring-brand-700/15;
+  }
+
+  input.invalid,
+  textarea.invalid {
+    @apply border-red-500 ring-2 ring-red-500/15;
+  }
+
+  hr {
+    @apply my-6 border-stone-200;
+  }
+}
+
+@layer components {
+  .layout-stack {
+    @apply space-y-6;
+  }
+
+  .surface {
+    @apply rounded-lg border border-stone-200 bg-white;
+  }
+
+  .surface-muted {
+    @apply rounded-lg border border-stone-200 bg-stone-100;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center rounded-md border border-brand-700 bg-white px-4 py-2 text-sm font-medium text-brand-700 transition;
+  }
+
+  .btn:hover,
+  .btn:active {
+    @apply bg-brand-700 text-white;
+  }
+
+  .btn.danger {
+    @apply border-red-600 text-red-600;
+  }
+
+  .btn.danger:hover,
+  .btn.danger:active {
+    @apply border-red-600 bg-red-600 text-white;
+  }
+
+  .btn-solid {
+    @apply inline-flex items-center justify-center rounded-md border border-brand-700 bg-brand-700 px-4 py-2 text-sm font-medium text-white transition;
+  }
+
+  .btn-solid:hover,
+  .btn-solid:active {
+    @apply bg-brand-800 border-brand-800 text-white;
+  }
+
+  .page-title {
+    @apply text-2xl font-semibold tracking-tight text-stone-900;
+  }
+
+  .section-copy {
+    @apply text-sm text-stone-600;
+  }
+
+  .form-card {
+    @apply mx-auto w-full max-w-2xl rounded-lg border border-stone-200 bg-white p-5 sm:p-6;
+  }
+
+  .form-stack {
+    @apply space-y-4;
+  }
+
+  .form-control {
+    @apply space-y-2;
+  }
+
+  .form-control label {
+    @apply block text-sm font-medium text-stone-700;
+  }
+
+  .user-message {
+    @apply mx-auto mb-4 w-full max-w-2xl rounded-md border border-brand-700/15 bg-brand-50 px-4 py-3 text-center text-sm text-brand-800;
+  }
+
+  .user-message--error {
+    @apply border-red-200 bg-red-50 text-red-700;
+  }
+
+  .product-grid {
+    @apply flex flex-col gap-4;
+  }
+
+  .product-card {
+    @apply flex h-80 w-full overflow-hidden rounded-lg border border-stone-200 bg-white;
+  }
+
+  .product-card__image {
+    @apply h-full w-72 shrink-0 bg-stone-100;
+  }
+
+  .product-card__image img {
+    @apply h-full w-full object-cover;
+  }
+
+  .product-card__content {
+    @apply flex min-w-0 flex-1 items-stretch justify-between;
+  }
+
+  .product-card__body {
+    @apply flex min-w-0 max-w-3xl flex-1 flex-col justify-center gap-3 p-6;
+  }
+
+  .product-card__title {
+    @apply text-xl font-semibold text-stone-900;
+  }
+
+  .product-card__price {
+    @apply text-base font-medium text-stone-700;
+  }
+
+  .product-card__description {
+    @apply text-sm leading-6 text-stone-600;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+
+  .product-card__actions {
+    @apply flex w-44 shrink-0 flex-col justify-center gap-2 border-l border-stone-200 bg-stone-50 px-4 py-4;
+  }
+
+  .product-card__actions form {
+    @apply w-full;
+  }
+
+  .product-card__actions .btn,
+  .product-card__actions .btn-solid {
+    @apply w-full;
+  }
+
+  .pagination-row {
+    @apply mt-6 flex flex-col gap-3 rounded-lg border border-stone-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .pagination-controls {
+    @apply flex items-center gap-3;
+  }
+
+  .pagination-form {
+    @apply flex items-center gap-2;
+  }
+
+  .pagination-form select {
+    @apply w-auto min-w-20;
+  }
+
+  .detail-shell {
+    @apply mx-auto grid max-w-5xl gap-6 lg:grid-cols-[minmax(0,1fr)_24rem];
+  }
+
+  .detail-image {
+    @apply overflow-hidden rounded-lg border border-stone-200 bg-white;
+  }
+
+  .detail-image img {
+    @apply h-full w-full object-cover;
+  }
+
+  .detail-panel {
+    @apply rounded-lg border border-stone-200 bg-white p-6;
+  }
+
+  .detail-copy {
+    @apply space-y-3 text-sm leading-6 text-stone-600;
+  }
+
+  .list-shell {
+    @apply space-y-4;
+  }
+
+  .list-item {
+    @apply rounded-lg border border-stone-200 bg-white p-4;
+  }
+
+  .empty-state {
+    @apply rounded-lg border border-dashed border-stone-300 bg-white px-6 py-10 text-center text-sm text-stone-600;
+  }
+
+  .cart-list {
+    @apply space-y-3;
+  }
+
+  .cart-item {
+    @apply flex items-center justify-between gap-4 rounded-lg border border-stone-200 bg-white p-4;
+  }
+
+  .cart-item__meta {
+    @apply space-y-1;
+  }
+
+  .orders-list {
+    @apply space-y-4;
+  }
+
+  .order-card {
+    @apply rounded-lg border border-stone-200 bg-white p-5;
+  }
+
+  .order-products {
+    @apply mt-4 space-y-2;
+  }
+
+  .main-header {
+    @apply border-b border-stone-200 bg-white;
+  }
+
+  .main-header__inner {
+    @apply mx-auto flex h-14 w-full max-w-7xl items-center px-4 sm:px-6;
+  }
+
+  .main-header__nav {
+    @apply flex flex-1 items-center justify-between gap-6;
+  }
+
+  .main-header__item-list {
+    @apply flex list-none items-center gap-2 p-0;
+  }
+
+  .main-header__item {
+    @apply m-0 p-0;
+  }
+
+  .nav-link {
+    @apply inline-flex rounded-md px-3 py-2 text-sm font-medium text-stone-700 transition;
+  }
+
+  .nav-link:hover {
+    @apply bg-stone-100 text-stone-900;
+  }
+
+  .nav-link.active {
+    @apply bg-brand-50 text-brand-800;
+  }
+
+  .logout-button {
+    @apply inline-flex rounded-md px-3 py-2 text-sm font-medium text-stone-700 transition;
+  }
+
+  .logout-button:hover,
+  .logout-button:active {
+    @apply bg-stone-100 text-stone-900;
+  }
+
+  .inline-form {
+    @apply inline;
+  }
+
+  .admin-table {
+    @apply w-full border-collapse;
+  }
+
+  .admin-table th {
+    @apply border-b border-stone-200 px-4 py-3 text-left text-sm font-medium text-stone-700;
+  }
+
+  .admin-table td {
+    @apply border-b border-stone-200 px-4 py-3 align-top text-sm text-stone-700;
+  }
+}
