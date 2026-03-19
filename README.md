@@ -310,6 +310,9 @@ BREVO_SMTP_PASS='your-brevo-smtp-password' - your Brevo SMTP password/key
 - query-driven pagination
 - passing pagination state into EJS
 - validating allowed page-size values
+- client-side API calls from browser JavaScript
+- async delete requests with `fetch()`
+- returning JSON from Express controllers
 - dedicated `404` and `500` error pages
 - passing server errors with `next(error)`
 - terminal Express error middleware
@@ -364,6 +367,47 @@ The shop homepage now uses query-based pagination in `controllers/shop.js` and r
 - `Query params`: `page`, `itemsPerPage`
 - `Database behavior`: `countDocuments()`, `skip()`, `limit()`
 - `UI trigger`: GET form submission from the items-per-page `<select>`
+
+## Async Product Delete Flow
+
+The admin product list now also includes a client-side API call flow for deleting products without a full page reload.
+
+### Async Delete In Plain English
+
+1. The admin products page renders a delete button for each product.
+   `views/admin/products.ejs` stores the product id and CSRF token directly on the button with `data-product-id` and `data-csrf`.
+
+2. The user clicks Delete in the browser.
+   The inline handler calls `deleteProduct(this)` from `public/js/admin.js`, so the frontend code gets the exact button that was clicked.
+
+3. The frontend reads the values from the button.
+   `admin.js` pulls `productId` and `csrfToken` from `button.dataset` instead of reading sibling hidden inputs.
+
+4. The browser sends an async HTTP request.
+   `fetch(`/admin/product/${productId}`, { method: 'DELETE' })` sends a client-side request to the Express backend instead of submitting a normal form and reloading the page.
+
+5. The CSRF token is sent in the request headers.
+   The frontend includes `"csrf-token": csrfToken` so the protected delete route still passes CSRF validation.
+
+6. Express routes the request to the delete controller.
+   `routes/admin.js` uses `router.delete('/product/:productId', isAuth, adminController.deleteProduct)`.
+
+7. The controller deletes the product and returns JSON.
+   `controllers/admin.js` reads `req.params.productId`, deletes the matching product for the logged-in user, and responds with `res.status(200).json({ message: 'Product deleted successfully' })`.
+
+8. The frontend updates the UI after the response comes back.
+   If the response is successful, `admin.js` removes the matching `.product-card` from the DOM without refreshing the page.
+
+### Async Delete Mapping In This Example
+
+- `Frontend trigger`: button click in `views/admin/products.ejs`
+- `Browser API`: `fetch()`
+- `HTTP method`: `DELETE`
+- `Endpoint`: `/admin/product/:productId`
+- `Route`: `routes/admin.js`
+- `Controller`: `deleteProduct` in `controllers/admin.js`
+- `Response type`: JSON via `res.json(...)`
+- `UI behavior`: remove product card without full page reload
 
 ## Current Practical Stack In This Project
 

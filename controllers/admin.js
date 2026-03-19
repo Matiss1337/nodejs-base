@@ -169,16 +169,14 @@ exports.getProducts = (req, res, next) => {
         });
 };
 
-exports.postDeleteProduct = (req, res, next) => {
-    const prodId = req.body.productId;
-    Product.findOne({ _id: prodId, userId: req.user._id })
-        .then((product) => {
-            fileHelper.deleteFile(product.imageUrl);
-            return Product.deleteOne({ _id: prodId, userId: req.user._id });
-        })
-        .then((result) => {
+exports.deleteProduct = (req, res, next) => {
+    const prodId = req.params.productId;
+    Product.deleteOne({ _id: prodId, userId: req.user._id })
+        .then(() => {
             console.log("DESTROYED PRODUCT");
-            res.redirect("/admin/products");
+            res.status(200).json({ message: "Product deleted successfully" });
         })
-        .catch((err) => next(err));
+        .catch((err) => {
+            res.status(500).json({ message: "Deleting product failed" });
+        });
 };

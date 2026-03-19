@@ -235,6 +235,9 @@
   .hidden {
     display: none;
   }
+  .inline {
+    display: inline;
+  }
   .list-item {
     display: list-item;
   }
